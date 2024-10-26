@@ -37,7 +37,7 @@ public class ActividadController {
         List<ActividadDTO> actividades = actividadService2.obtenerActividadesPorTipo(type);
         return ResponseEntity.ok(actividades);
     }
-  
+
     // Asignar una activdad a un voluntario
     @PostMapping("/asignar/{actividad_id}/voluntario/{voluntario_id}")
     public ResponseEntity<String> asignarActividadAVoluntario(@Valid @RequestBody VolunteerAssignationToActivityRequest request) {
@@ -60,9 +60,10 @@ public class ActividadController {
         // Crear y guardar la actividad
         ActividadDTO actividadDTO = new ActividadDTO();
         actividadDTO.setDuracion(request.getDuracion());
+        actividadDTO.setDescripcion(request.getDescripcion());
         actividadDTO.setNombre(request.getNombre());
         actividadDTO.setTipo(request.getTipo());
-
+        actividadDTO.setDescripcion(request.getDescripcion());
 
         ActividadDTO actividadGuardada = actividadService.registrarActividad(actividadDTO);
 
@@ -76,8 +77,10 @@ public class ActividadController {
         ActividadDTO actividadDTO = new ActividadDTO();
         actividadDTO.setId(id);
         actividadDTO.setDuracion(request.getDuracion());
+        actividadDTO.setDescripcion(request.getDescripcion());
         actividadDTO.setNombre(request.getNombre());
         actividadDTO.setTipo(request.getTipo());
+        actividadDTO.setDescripcion(request.getDescripcion());
         actividadService.actualizarActividad(actividadDTO);
         return ResponseEntity.noContent().build();
     }
