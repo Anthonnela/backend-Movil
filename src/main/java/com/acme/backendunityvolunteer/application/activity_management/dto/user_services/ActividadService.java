@@ -2,6 +2,7 @@ package com.acme.backendunityvolunteer.application.activity_management.dto.user_
 
 import com.acme.backendunityvolunteer.application.activity_management.dto.ActividadDTO;
 import com.acme.backendunityvolunteer.application.activity_management.dto.VoluntarioInscritoDTO;
+import com.acme.backendunityvolunteer.application.user_management.dto.user_services.PerfilVoluntarioService;
 import com.acme.backendunityvolunteer.domain.activity_management.model.Actividad;
 import com.acme.backendunityvolunteer.domain.activity_management.repository.ActividadRepository;
 import com.acme.backendunityvolunteer.domain.user_management.model.PerfilOrganizacion;
@@ -9,6 +10,7 @@ import com.acme.backendunityvolunteer.domain.user_management.model.PerfilVolunta
 import com.acme.backendunityvolunteer.domain.user_management.model.Usuario;
 import com.acme.backendunityvolunteer.domain.user_management.model.repository.PerfilOrganizacionRepository;
 import com.acme.backendunityvolunteer.domain.user_management.model.repository.PerfilVoluntarioRepository;
+import com.acme.backendunityvolunteer.exception.NotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,9 @@ public class ActividadService {
     @Autowired
     private PerfilVoluntarioRepository perfilVoluntarioRepository;
 
+    @Autowired
+    private PerfilVoluntarioService perfilVoluntarioService;
+
     // Método para crear una nueva actividad
     @Transactional
     public ActividadDTO crearActividad(ActividadDTO actividadDTO) {
@@ -46,6 +51,7 @@ public class ActividadService {
         actividad.setPersonasMaximo(actividadDTO.getPersonasMaximo());
         actividad.setTotalPersonasInscritas(0);
         actividad.setOrganizacion(organizacion);
+        actividad.setPuntuacionActividad(actividadDTO.getPuntuacionActividad());
 
         actividadRepository.save(actividad);
         return mapToDTO(actividad);
@@ -65,6 +71,10 @@ public class ActividadService {
 
         actividad.getVoluntarios().add(voluntario);
         actividad.setTotalPersonasInscritas(actividad.getTotalPersonasInscritas() + 1);
+        // Retrieve the puntuacionActividad from the actividad entity
+        int puntuacionActividad = actividad.getPuntuacionActividad();
+        // Sumar la puntuación de la actividad al perfil del voluntario
+        perfilVoluntarioService.sumarPuntuacionActividad(voluntario, puntuacionActividad);
         actividadRepository.save(actividad);
     }
 
@@ -108,6 +118,31 @@ public class ActividadService {
     }
 
     @Transactional
+    public ActividadDTO actualizarActividad(Long actividadId, ActividadDTO actividadDTO) {
+        // Buscar la actividad por su ID
+        Actividad actividadExistente = actividadRepository.findById(actividadId)
+                .orElseThrow(() -> new NotFoundException("Actividad no encontrada con ID: " + actividadId));
+
+        // Actualizar los datos de la actividad
+        actividadExistente.setNombre(actividadDTO.getNombre());
+        actividadExistente.setDescripcion(actividadDTO.getDescripcion());
+        actividadExistente.setFecha(actividadDTO.getFecha());
+        actividadExistente.setHora(actividadDTO.getHora());
+        actividadExistente.setDuracion(actividadDTO.getDuracion());
+        actividadExistente.setLugar(actividadDTO.getLugar());
+        actividadExistente.setTipo(actividadDTO.getTipo());
+        actividadExistente.setPersonasMinimo(actividadDTO.getPersonasMinimo());
+        actividadExistente.setPersonasMaximo(actividadDTO.getPersonasMaximo());
+
+        // Guardar la actividad actualizada
+        actividadRepository.save(actividadExistente);
+
+        // Retornar el DTO actualizado
+        return mapToDTO(actividadExistente);
+    }
+
+
+    @Transactional
     public List<VoluntarioInscritoDTO> listarVoluntariosDeActividad(Long actividadId) {
         Actividad actividad = actividadRepository.findById(actividadId)
                 .orElseThrow(() -> new RuntimeException("Actividad no encontrada con ID: " + actividadId));
@@ -121,7 +156,8 @@ public class ActividadService {
                     usuario.getTelefono(),
                     voluntario.getIntereses(),
                     voluntario.getExperiencia(),
-                    voluntario.getDisponibilidad()
+                    voluntario.getDisponibilidad(),
+                    voluntario.getPuntuacion()
             );
         }).collect(Collectors.toList());
     }
@@ -151,6 +187,7 @@ public class ActividadService {
         dto.setPersonasMaximo(actividad.getPersonasMaximo());
         dto.setTotalPersonasInscritas(actividad.getTotalPersonasInscritas());
         dto.setOrganizacionId(actividad.getOrganizacion().getId());
+        dto.setPuntuacionActividad(actividad.getPuntuacionActividad());
         return dto;
     }
 }

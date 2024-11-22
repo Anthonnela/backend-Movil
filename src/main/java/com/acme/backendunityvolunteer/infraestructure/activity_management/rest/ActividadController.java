@@ -27,7 +27,6 @@ public class ActividadController {
         try {
             ActividadDTO nuevaActividad = actividadService.crearActividad(actividadDTO);
 
-            // Respuesta exitosa con detalles de la actividad creada
             Map<String, Object> response = new HashMap<>();
             response.put("actividadId", nuevaActividad.getId());
             response.put("mensaje", "Actividad creada con éxito");
@@ -44,14 +43,13 @@ public class ActividadController {
 
     // Inscribir un voluntario en una actividad
     @PostMapping("/voluntario/participar/{actividadId}")
-    public ResponseEntity<Map<String, String>> inscribirVoluntario(
-            @PathVariable Long actividadId, @RequestParam Long voluntarioId) {
+    public ResponseEntity<Map<String, String>> inscribirVoluntario(@PathVariable Long actividadId, @RequestParam Long voluntarioId) {
         try {
             actividadService.inscribirVoluntario(actividadId, voluntarioId);
 
             Map<String, String> response = new HashMap<>();
             response.put("mensaje", "Voluntario inscrito en la actividad con éxito");
-            return ResponseEntity.ok(response);  // Devolver 200 OK
+            return ResponseEntity.ok(response);
 
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -69,16 +67,14 @@ public class ActividadController {
     @GetMapping("/listar")
     public ResponseEntity<List<ActividadDTO>> listarActividades() {
         List<ActividadDTO> actividades = actividadService.listarActividades();
-        return ResponseEntity.ok(actividades);  // Devuelve 200 OK con la lista de actividades
+        return ResponseEntity.ok(actividades);
     }
 
-    // Obtener detalles de una actividad específica (incluye la lista de voluntarios inscritos)
     @GetMapping("/{actividadId}")
     public ResponseEntity<Map<String, Object>> obtenerDetallesActividad(@PathVariable Long actividadId) {
         try {
             ActividadDTO actividad = actividadService.obtenerDetallesActividad(actividadId);
 
-            // Mapa de respuesta con detalles de la actividad y la lista de voluntarios
             Map<String, Object> response = new HashMap<>();
             response.put("actividad", actividad);
             response.put("voluntariosInscritos", actividadService.obtenerVoluntariosInscritos(actividadId));
@@ -115,7 +111,7 @@ public class ActividadController {
     public ResponseEntity<List<ActividadDTO>> obtenerActividadesPorOrganizacion(@PathVariable Long organizacionId) {
         try {
             List<ActividadDTO> actividades = actividadService.obtenerActividadesPorOrganizacion(organizacionId);
-            return ResponseEntity.ok(actividades);  // Devuelve 200 OK con la lista de actividades
+            return ResponseEntity.ok(actividades);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(null);
@@ -130,7 +126,7 @@ public class ActividadController {
     public ResponseEntity<List<ActividadDTO>> obtenerActividadesPorVoluntario(@PathVariable Long voluntarioId) {
         try {
             List<ActividadDTO> actividades = actividadService.obtenerActividadesPorVoluntario(voluntarioId);
-            return ResponseEntity.ok(actividades);  // Devuelve 200 OK con la lista de actividades
+            return ResponseEntity.ok(actividades);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(null);
@@ -144,7 +140,7 @@ public class ActividadController {
     public ResponseEntity<List<VoluntarioInscritoDTO>> listarVoluntariosDeActividad(@PathVariable Long actividadId) {
         try {
             List<VoluntarioInscritoDTO> voluntarios = actividadService.listarVoluntariosDeActividad(actividadId);
-            return ResponseEntity.ok(voluntarios);  // Devuelve 200 OK con la lista de voluntarios
+            return ResponseEntity.ok(voluntarios);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(null);
@@ -154,6 +150,32 @@ public class ActividadController {
         }
     }
 
+    @PutMapping("/organizacion/editar/{actividadId}")
+    public ResponseEntity<Map<String, Object>> actualizarActividad(
+            @PathVariable Long actividadId,
+            @Valid @RequestBody ActividadDTO actividadDTO) {
+        try {
+            // Llama a `actualizarActividad` en el servicio para realizar la actualización
+            ActividadDTO actividadActualizada = actividadService.actualizarActividad(actividadId, actividadDTO);
+
+            // Prepara la respuesta
+            Map<String, Object> response = new HashMap<>();
+            response.put("actividad", actividadActualizada);
+            response.put("mensaje", "Actividad actualizada con éxito");
+
+            // Retorna la respuesta con el estado HTTP 200 (OK)
+            return ResponseEntity.ok(response);
+
+        } catch (NotFoundException e) {
+            // Si la actividad no se encuentra, retorna un error 404 (Not Found)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensaje", "Actividad no encontrada"));
+        } catch (Exception e) {
+            // En caso de un error inesperado, retorna un error 500 (Internal Server Error)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("mensaje", "Error al actualizar la actividad"));
+        }
+    }
 
 
 

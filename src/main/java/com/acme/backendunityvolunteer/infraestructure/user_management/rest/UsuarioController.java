@@ -76,12 +76,10 @@ public class UsuarioController {
             perfilOrganizacionService.crearPerfilOrganizacion(perfilOrganizacion);
         }
 
-        // Crear un mapa con los datos que se devolverán como respuesta JSON
         Map<String, Object> response = new HashMap<>();
         response.put("usuarioId", usuarioGuardado.getId());
         response.put("mensaje", "Usuario y perfil registrados con éxito");
 
-        // Devolver el usuarioId y el mensaje como JSON
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -123,16 +121,13 @@ public class UsuarioController {
     @PutMapping("/voluntarios/{usuarioId}")
     public ResponseEntity<Map<String, String>> actualizarPerfilVoluntario(@PathVariable Long usuarioId, @Valid @RequestBody PerfilVoluntarioDTO perfilVoluntario) {
         try {
-            // Actualizar perfil del voluntario
             perfilVoluntario.setUsuarioId(usuarioId);
             perfilVoluntarioService.actualizarPerfil(perfilVoluntario);
 
-            // Retornar mensaje de éxito con código 200 OK
             Map<String, String> response = new HashMap<>();
             response.put("mensaje", "Perfil de voluntario actualizado con éxito");
-            return ResponseEntity.ok(response);  // Devuelve 200 OK con un JSON
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            // Manejar cualquier error que ocurra
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("mensaje", "Error al actualizar perfil de voluntario");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
@@ -140,28 +135,22 @@ public class UsuarioController {
     }
 
 
-    // Obtener el perfil de una organización por su ID de usuario
     @GetMapping("/organizaciones/{usuarioId}")
     public ResponseEntity<PerfilOrganizacionDTO> obtenerPerfilOrganizacion(@PathVariable Long usuarioId) {
         PerfilOrganizacionDTO perfilOrganizacion = perfilOrganizacionService.obtenerPerfilPorUsuarioId(usuarioId);
         return ResponseEntity.ok(perfilOrganizacion);
     }
 
-    // Actualizar perfil de organización
     @PutMapping("/organizaciones/{usuarioId}")
     public ResponseEntity<Map<String, String>> actualizarPerfilOrganizacion(@PathVariable Long usuarioId, @Valid @RequestBody PerfilOrganizacionDTO perfilOrganizacion) {
         try {
-            // Actualizar perfil de la organización
             perfilOrganizacion.setUsuarioId(usuarioId);
             perfilOrganizacionService.actualizarPerfil(perfilOrganizacion);
 
-            // Retornar mensaje de éxito con código 200 OK
             Map<String, String> response = new HashMap<>();
             response.put("mensaje", "Perfil de organización actualizado con éxito");
-            return ResponseEntity.ok(response);  // Devuelve 200 OK con un JSON
-
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            // Manejar cualquier error que ocurra y retornar mensaje de error
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("mensaje", "Error al actualizar perfil de organización");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
@@ -172,13 +161,10 @@ public class UsuarioController {
     @GetMapping("/PerfilVoluntario/{usuarioId}")
     public ResponseEntity<Map<String, Object>> obtenerPerfilCompleto(@PathVariable Long usuarioId) {
         try {
-            // Obtener los detalles del usuario por su ID
             UsuarioDTO usuarioDTO = usuarioService.obtenerUsuarioPorId(usuarioId);
 
-            // Obtener el perfil del voluntario usando el usuarioId
             PerfilVoluntarioDTO perfilVoluntarioDTO = perfilVoluntarioService.obtenerPerfilPorUsuarioId(usuarioId);
 
-            // Crear un mapa de respuesta para combinar ambos objetos
             Map<String, Object> response = new HashMap<>();
             response.put("correo", usuarioDTO.getCorreo());
             response.put("nombre", usuarioDTO.getNombre());
@@ -187,15 +173,13 @@ public class UsuarioController {
             response.put("intereses", perfilVoluntarioDTO.getIntereses());
             response.put("experiencia", perfilVoluntarioDTO.getExperiencia());
             response.put("disponibilidad", perfilVoluntarioDTO.getDisponibilidad());
+            response.put("puntuacion", perfilVoluntarioDTO.getPuntuacion());
 
-            // Devolver la respuesta con código 200 OK
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {
-            // Si el usuario o perfil no es encontrado, devolver 404
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("mensaje", "Usuario o perfil no encontrado"));
         } catch (Exception e) {
-            // Cualquier otro error, devolver 500
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("mensaje", "Error al obtener el perfil del usuario"));
         }
@@ -204,13 +188,8 @@ public class UsuarioController {
     @GetMapping("/PerfilOrganizacion/{usuarioId}")
     public ResponseEntity<Map<String, Object>> obtenerPerfilOrganizacionCompleto(@PathVariable Long usuarioId) {
         try {
-            // Obtener los detalles del usuario por su ID
             UsuarioDTO usuarioDTO = usuarioService.obtenerUsuarioPorId(usuarioId);
-
-            // Obtener el perfil de la organización usando el usuarioId
             PerfilOrganizacionDTO perfilOrganizacionDTO = perfilOrganizacionService.obtenerPerfilPorUsuarioId(usuarioId);
-
-            // Crear un mapa de respuesta para combinar ambos objetos
             Map<String, Object> response = new HashMap<>();
             response.put("correo", usuarioDTO.getCorreo());
             response.put("nombre", usuarioDTO.getNombre());
@@ -220,14 +199,13 @@ public class UsuarioController {
             response.put("tipoOrganizacion", perfilOrganizacionDTO.getTipoOrganizacion());
             response.put("sitioWeb", perfilOrganizacionDTO.getSitioWeb());
 
-            // Devolver la respuesta con código 200 OK
             return ResponseEntity.ok(response);
         } catch (NotFoundException e) {
-            // Si el usuario o perfil no es encontrado, devolver 404
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("mensaje", "Usuario o perfil no encontrado"));
         } catch (Exception e) {
-            // Cualquier otro error, devolver 500
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("mensaje", "Error al obtener el perfil del usuario"));
         }
@@ -243,28 +221,25 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> iniciarSesion(@Valid @RequestBody LoginRequest request) {
         try {
-            // Lógica de autenticación y generación de token
+
             String token = usuarioService.iniciarSesion(request.getCorreo(), request.getContrasena());
 
-            // Obtener los detalles del usuario basado en el correo
             UsuarioDTO usuarioDTO = usuarioService.obtenerUsuarioPorCorreo(request.getCorreo());
 
-            // Crear el objeto de respuesta con token, tipoUsuario, usuarioId y nombre
             AuthResponse response = new AuthResponse();
             response.setToken(token);
             response.setTipoUsuario(usuarioDTO.getTipoUsuario());
             response.setUsuarioId(usuarioDTO.getId());
             response.setNombre(usuarioDTO.getNombre());
 
-            return ResponseEntity.ok(response);  // Devolver 200 OK con los datos del usuario
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            // Manejar el error de contraseña incorrecta o usuario no encontrado
             if (e.getMessage().equals("Contraseña incorrecta")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);  // Devolver 401 Unauthorized
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             } else if (e.getMessage().equals("Usuario no encontrado con ese correo")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // Devolver 404 Not Found
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);  // Cualquier otro error
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
         }
     }
